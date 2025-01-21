@@ -8,7 +8,7 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
 } from "firebase/auth";
-import { saveToken } from "../lib/storage";
+import { saveToken, clearToken } from "../lib/storage";
 
 import { IRegistrationForm, ILoginForm } from "../interfaces/IUser";
 
@@ -22,7 +22,11 @@ const firebaseConfig = {
 };
 
 export const firebase = initializeApp(firebaseConfig);
-export const signOut = () => firebaseSignOut(getAuth());
+export const signOut = () => {
+  firebaseSignOut(getAuth());
+  clearToken();
+  redirect("/auth");
+};
 export const signIn = async ({ email, password }: ILoginForm) =>
   signInWithEmailAndPassword(getAuth(), email, password).then(
     async (userCredential) => {

@@ -11,3 +11,9 @@ export const getToken = () => {
 
   return "";
 };
+
+export const clearToken = () => {
+  if (window) {
+    window.localStorage.removeItem("token");
+  }
+};

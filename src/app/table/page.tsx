@@ -8,9 +8,11 @@ import {
   Layout,
   Table,
   TableColumnsType,
+  Button,
 } from "antd";
 
 import { useRedirecting } from "../lib/useRedirecting";
+import { signOut } from "../api/firebase";
 
 interface DataType {
   key: React.Key;
@@ -139,8 +141,16 @@ export default function TablePage() {
         height: "100%",
       }}
     >
-      <Layout.Header style={{ display: "flex", alignItems: "center" }}>
+      <Layout.Header
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
         <div className="demo-logo" />
+
+        <Button onClick={signOut}>Выход</Button>
       </Layout.Header>
       <Layout>
         <Layout style={{ padding: "0 24px 24px", height: "100%" }}>
