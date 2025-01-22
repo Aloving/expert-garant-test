@@ -9,7 +9,9 @@ import {
 } from "@ant-design/pro-components";
 import { Alert, Button, Divider, Tabs } from "antd";
 
-import { signIn, createUser } from "../../../api/firebase";
+import { useCreateUser } from "../../../lib/useCreateUser";
+import { useSignIn } from "../../../lib/useSignIn";
+import { useForgotPassword } from "../../../lib/useForgotPassword";
 import { EAuthForm } from "../../../enum/EAuthForm";
 
 import { ILoginForm, IRegistrationForm } from "../../../interfaces/IUser";
@@ -19,21 +21,24 @@ export const requredFieldRule = {
   message: "Обязательное поле!",
 };
 
-interface ILoginPageProps {
-  loginErrorMessage?: string;
-  registrationErrorMessage?: string;
-  isLoading?: boolean;
-}
-
-export const LoginPage: React.FC<ILoginPageProps> = ({
-  loginErrorMessage,
-  registrationErrorMessage,
-  isLoading,
-}) => {
+export const LoginPage: React.FC = () => {
+  const { createUser, ...createUserAssets } = useCreateUser();
+  const { signIn, ...signInAssets } = useSignIn();
+  const { forgotPassword, ...forgotPasswordAssets } = useForgotPassword();
   const [form, setForm] = useState<EAuthForm>(EAuthForm.AUTHORIZATION);
   const setRegistrationForm = () => setForm(EAuthForm.REGISTRATION);
+  const setForgotPasswordForm = () => setForm(EAuthForm.FORGOT_PASSWORD);
+
   const isAuthForm = form === EAuthForm.AUTHORIZATION;
   const isRegistrationForm = form === EAuthForm.REGISTRATION;
+  const isForgotPasswordForm = form === EAuthForm.FORGOT_PASSWORD;
+
+  const isLoading =
+    createUserAssets.isLoading ||
+    signInAssets.isLoading ||
+    forgotPasswordAssets.isLoading;
+  const registrationErrorMessage = createUserAssets.error;
+  const loginErrorMessage = signInAssets.error;
 
   return (
     <ProConfigProvider hashed={false}>
@@ -47,6 +52,10 @@ export const LoginPage: React.FC<ILoginPageProps> = ({
             if (isAuthForm) {
               signIn(values as ILoginForm);
             }
+
+            if (isForgotPasswordForm) {
+              forgotPassword(values.email);
+            }
           }}
           disabled={isLoading}
           title="Login"
@@ -54,6 +63,19 @@ export const LoginPage: React.FC<ILoginPageProps> = ({
             render: () => {
               return (
                 <div>
+                  {isForgotPasswordForm && (
+                    <Button
+                      key="forgot-password"
+                      block
+                      type="primary"
+                      style={{
+                        margin: "0 auto",
+                      }}
+                      htmlType="submit"
+                    >
+                      Сбросить пароль
+                    </Button>
+                  )}
                   {isAuthForm && (
                     <Button
                       key="next"
@@ -96,7 +118,7 @@ export const LoginPage: React.FC<ILoginPageProps> = ({
             <Tabs.TabPane key={EAuthForm.AUTHORIZATION} tab="Авторизация" />
             <Tabs.TabPane key={EAuthForm.REGISTRATION} tab="Регистрация" />
           </Tabs>
-          {form === EAuthForm.AUTHORIZATION && (
+          {isAuthForm && (
             <>
               <ProFormText
                 name="email"
@@ -127,6 +149,16 @@ export const LoginPage: React.FC<ILoginPageProps> = ({
               <div
                 style={{
                   display: "flex",
+                  justifyContent: "end",
+                }}
+              >
+                <Button type="link" onClick={setForgotPasswordForm}>
+                  Забыли пароль?
+                </Button>
+              </div>
+              <div
+                style={{
+                  display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
                   marginBottom: "16px",
@@ -139,13 +171,13 @@ export const LoginPage: React.FC<ILoginPageProps> = ({
               </div>
             </>
           )}
-          {form === EAuthForm.REGISTRATION && (
+          {isRegistrationForm && (
             <>
               <ProFormText
                 name="email"
                 fieldProps={{
                   size: "large",
-                  prefix: <MailOutlined className={"prefixIcon"} />,
+                  prefix: <MailOutlined className="prefixIcon" />,
                 }}
                 placeholder="Введите email"
                 rules={[requredFieldRule]}
@@ -154,7 +186,7 @@ export const LoginPage: React.FC<ILoginPageProps> = ({
                 name="password"
                 fieldProps={{
                   size: "large",
-                  prefix: <LockOutlined className={"prefixIcon"} />,
+                  prefix: <LockOutlined className="prefixIcon" />,
                 }}
                 placeholder="Пароль"
                 rules={[requredFieldRule]}
@@ -163,9 +195,9 @@ export const LoginPage: React.FC<ILoginPageProps> = ({
                 name="repeatedPassword"
                 fieldProps={{
                   size: "large",
-                  prefix: <LockOutlined className={"prefixIcon"} />,
+                  prefix: <LockOutlined className="prefixIcon" />,
                 }}
-                placeholder="Пароль"
+                placeholder="Повторите пароль"
                 rules={[requredFieldRule]}
               />
               {registrationErrorMessage && (
@@ -173,6 +205,29 @@ export const LoginPage: React.FC<ILoginPageProps> = ({
               )}
               <Divider />
             </>
+          )}
+          {isForgotPasswordForm && (
+            <div>
+              <ProFormText
+                name="email"
+                fieldProps={{
+                  size: "large",
+                  prefix: <MailOutlined className="prefixIcon" />,
+                }}
+                placeholder="Введите email"
+                rules={[requredFieldRule]}
+              />
+              <div
+                style={{
+                  marginBottom: "12px",
+                }}
+              >
+                <Divider />
+                {forgotPasswordAssets.succeed && (
+                  <Alert description="Отправка успешна" type="success" />
+                )}
+              </div>
+            </div>
           )}
         </LoginForm>
       </div>

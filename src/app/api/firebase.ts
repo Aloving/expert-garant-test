@@ -2,15 +2,8 @@
 
 import { initializeApp } from "firebase/app";
 import { redirect } from "next/navigation";
-import {
-  getAuth,
-  signOut as firebaseSignOut,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-} from "firebase/auth";
-import { saveToken, clearToken } from "../lib/storage";
-
-import { IRegistrationForm, ILoginForm } from "../interfaces/IUser";
+import { getAuth, signOut as firebaseSignOut } from "firebase/auth";
+import { clearToken } from "../lib/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAFGMsZbKdqZVK7rIjo4GT_zo0m_TMjadY",
@@ -27,25 +20,3 @@ export const signOut = () => {
   clearToken();
   redirect("/auth");
 };
-export const signIn = async ({ email, password }: ILoginForm) =>
-  signInWithEmailAndPassword(getAuth(), email, password).then(
-    async (userCredential) => {
-      const user = userCredential.user;
-
-      user.getIdToken().then((token) => {
-        saveToken(token);
-        redirect("/table");
-      });
-    }
-  );
-
-export const createUser = ({ email, password }: IRegistrationForm) =>
-  createUserWithEmailAndPassword(getAuth(), email, password).then(
-    (userCredential) => {
-      const user = userCredential.user;
-
-      if (user) {
-        signIn({ email, password });
-      }
-    }
-  );
